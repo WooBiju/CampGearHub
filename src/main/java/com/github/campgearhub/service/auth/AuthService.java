@@ -16,6 +16,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -28,12 +30,24 @@ public class AuthService {
 
     public User oauthLogin(String accessCode, HttpServletResponse httpServletResponse) {
         KakaoDTO.OAuthToken oAuthToken = kaKaoUtil.requestToken(accessCode);
-        KakaoDTO.KakaoProfile profile = kaKaoUtil.requestProfile(oAuthToken);
+        KakaoDTO kakaoDTO = kaKaoUtil.requestProfile(oAuthToken);  // 최상위 DTO 반환
 
-        String email = profile.getKakao_account().getEmail();
+
+        String email = kakaoDTO.getKakaoAccount().getEmail();
+
+        String nickname;
+        if (kakaoDTO.getKakaoAccount().getProfile() != null) {
+            nickname = kakaoDTO.getKakaoAccount().getProfile().getNickname();
+        } else if (kakaoDTO.getProperties() != null) {
+            nickname = kakaoDTO.getProperties().getNickname();
+        }else {
+            nickname = "기본 닉네임";
+        }
 
         User user = userRepository.findByEmail(email)
-                .orElseGet(() -> createNewUser(profile));
+                .orElseGet(() -> createNewUser(kakaoDTO,nickname));
+
+
 
         // customUserDetails 객체 생성
         CustomUserDetails customUserDetails = new CustomUserDetails(user);
@@ -53,14 +67,23 @@ public class AuthService {
 
     }
 
-    private User createNewUser(KakaoDTO.KakaoProfile profile) {
+    private User createNewUser(KakaoDTO kakaoDTO, String nickname) {
+
+        String email = kakaoDTO.getKakaoAccount().getEmail();
+
+        String oauthPassword = "";
+
+        String username = nickname;
+
         User newUser = AuthConverter.toUser(
-                profile.getKakao_account().getEmail(),
+                email,
                 Role.ROLE_USER,
-                null,
-                profile.getKakao_account().getProfile().getNickname(),
-                passwordEncoder
+                username,
+                nickname,
+                kakaoDTO.getProperties().getProfileImage(),
+                oauthPassword
         );
         return userRepository.save(newUser);
+
     }
 }

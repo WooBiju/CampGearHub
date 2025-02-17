@@ -6,12 +6,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class AuthConverter {
 
-    public static User toUser(String email, Role role, String name, String password, PasswordEncoder passwordEncoder) {
+    public static User toUser(String email, Role role, String username, String nickname, String profileImage, String password) {
         return User.builder()
                 .email(email)
                 .role(role)
-                .password(passwordEncoder.encode(password))
-                .username(name)
+                .password(password)
+                .username(username)
+                .nickname(nickname)
+                .profileImageUrl(profileImage)
                 .build();
     }
 }
