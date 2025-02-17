@@ -23,7 +23,9 @@ public class CustomUserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User userData = userRepository.findByEmail(email);
+        User userData = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(email));
+
         if (userData != null) {
             // UserDetails 에 담아서 return 하면 AuthenticationManager 가 검증 함
             return new CustomUserDetails(userData);
