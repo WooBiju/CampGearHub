@@ -58,7 +58,7 @@ public class KaKaoUtil {
         return token;
     }
 
-    public KakaoDTO.KakaoProfile requestProfile(KakaoDTO.OAuthToken token) {
+    public KakaoDTO requestProfile(KakaoDTO.OAuthToken token) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/x-www-form-urlencoded");
@@ -74,13 +74,13 @@ public class KaKaoUtil {
         );
 
         ObjectMapper mapper = new ObjectMapper();
-        KakaoDTO.KakaoProfile profile = null;
+        KakaoDTO kakaoDTO = null;
 
         try {
-            profile = mapper.readValue(response.getBody(),KakaoDTO.KakaoProfile.class);
+            kakaoDTO = mapper.readValue(response.getBody(),KakaoDTO.class);
         }catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        return profile;
+        return kakaoDTO;
     }
 }
